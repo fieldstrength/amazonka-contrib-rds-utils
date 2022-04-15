@@ -6,3 +6,9 @@ packages: ./*.cabal
 -- https://www.reddit.com/r/haskell/comments/p303af/unreasonable_hackage_requirement/h8rnw3u
 package amazonka-contrib-rds-utils
   ghc-options:  -Werror
+
+source-repository-package
+  type: git
+  location: https://github.com/denar50/amazonka
+  tag: dd3b66e9c128106e7828e903613321c483c56200
+  subdir: lib/amazonka lib/amazonka-core lib/services/amazonka-rds lib/services/amazonka-sts lib/services/amazonka-sso

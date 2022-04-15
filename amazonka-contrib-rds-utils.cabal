@@ -1,6 +1,6 @@
 cabal-version:      3.0
 name:               amazonka-contrib-rds-utils
-version:            1.6.1.1
+version:            2.0.0.0
 
 -- A short (one-line) description of the package.
 -- synopsis:
@@ -25,7 +25,7 @@ extra-source-files:     CHANGELOG.md
                         README.md
 
 library
-    exposed-modules:    Network.AWS.RDS.Utils
+    exposed-modules:    Amazonka.RDS.Utils
 
     -- Modules included in this library but not exported.
     -- other-modules:
@@ -33,13 +33,15 @@ library
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
     build-depends:      base          >= 4.14.1.0
-                    ,   amazonka      >= 1.6.1
+                    ,   amazonka      >= 2.0
                     ,   amazonka-core
                     ,   amazonka-rds
                     ,   bytestring    >= 0.9
+                    ,   generic-lens
                     ,   lens          >= 4.4
                     ,   text          >= 1.1
                     ,   time          >= 1.9.1
+                    ,   conduit-extra
 
     hs-source-dirs:     src
 
@@ -48,6 +50,8 @@ library
     default-extensions: OverloadedStrings
                         LambdaCase
                         QuasiQuotes
+                        TypeApplications
+                        DataKinds
 
     ghc-options:        -Wall
                         -Wcompat
@@ -70,6 +74,8 @@ executable generate-db-auth-token
   default-extensions:   OverloadedStrings
                         LambdaCase
                         QuasiQuotes
+                        TypeApplications
+                        DataKinds
 
   ghc-options:          -Wall
                         -Wcompat
@@ -87,8 +93,9 @@ executable generate-db-auth-token
   build-depends:
       base >=4.12 && <5
     , bytestring
-    , amazonka
+    , amazonka >= 2.0
     , amazonka-contrib-rds-utils
+    , generic-lens
     , lens
     , optparse-applicative >= 0.16.1
     , text

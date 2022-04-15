@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies           #-}  -- required for 'Rs'
 {-# LANGUAGE FlexibleInstances      #-}  -- required for ToQuery String
 {-# OPTIONS_GHC -fno-warn-orphans   #-}
-module  Network.AWS.RDS.Utils
+module  Amazonka.RDS.Utils
     (   generateDbAuthToken
     ,   Endpoint
     ,   Port
@@ -11,35 +11,35 @@ module  Network.AWS.RDS.Utils
     )
 where
 
+import           Amazonka                   ( runResourceT
+                                            , presignURL
+                                            )
+import qualified Amazonka.RDS               as RDS
+import           Amazonka.Endpoint          ( setEndpoint )
+import qualified Amazonka.Env               as Env
+import qualified Amazonka.Request           as AWSReq
+import qualified Amazonka.Response          as AWSResp
+import           Amazonka.Data.Text         ( fromText )
+import           Amazonka.Data.Path         ( ToPath (..)
+                                            )
+import           Amazonka.Data.Query        ( ToQuery (..)
+                                            , QueryString ( QList )
+                                            )
+import           Amazonka.Data.Headers      ( ToHeaders (..)
+                                            )
+import           Amazonka.Types             ( Seconds (..)
+                                            , AWSRequest (..)
+                                            , AWSResponse
+                                            , Service (..)
+                                            , Region
+                                            )
 import           Prelude                    hiding ( drop, length )
-import           Control.Lens               ( (^.), (&), (.~) )
-import           Control.Monad.Trans.AWS    ( runResourceT, runAWST )
+import           Control.Lens               ( (&), set )
 import           Data.ByteString            ( ByteString, drop, length )
 import           Data.ByteString.Char8      ( pack )
 import qualified Data.Text                  as T
 import qualified Data.Time.Clock            as Clock
-import           Network.AWS                ( _svcPrefix
-                                            )
-import qualified Network.AWS.RDS            as RDS
-import           Network.AWS.Endpoint       ( setEndpoint )
-import qualified Network.AWS.Env            as Env
-import qualified Network.AWS.Request        as AWSReq
-import qualified Network.AWS.Response       as AWSResp
-import           Network.AWS.Data.Text      ( fromText )
-import           Network.AWS.Data.Path      ( ToPath (..)
-                                            )
-import           Network.AWS.Data.Query     ( ToQuery (..)
-                                            , QueryString ( QList )
-                                            )
-import           Network.AWS.Data.Headers   ( ToHeaders (..)
-                                            )
-import           Network.AWS.Presign        as Presign
-import           Network.AWS.Types          ( Seconds (..)
-                                            , AWSRequest (..)
-                                            , Rs
-                                            , Service
-                                            , Region
-                                            )
+import           Data.Generics.Product      ( field )
 
 type Endpoint   = String
 type Port       = Int
@@ -53,7 +53,7 @@ serviceSigningName :: ByteString
 serviceSigningName = "rds-db"
 
 thisService :: Service
-thisService = RDS.rds { _svcPrefix = serviceSigningName }
+thisService = RDS.defaultService { _serviceSigningName = serviceSigningName }
 
 dropPrefix :: ByteString -> ByteString
 dropPrefix = drop $ length "https://"
@@ -75,14 +75,13 @@ generateDbAuthToken env endp prt username region = do
                                     , port       = prt
                                     , dbUsername = username
                                     }
-        regionalEnv = env & Env.envRegion .~ region
+        regionalEnv = env & set (field @"envRegion") region
 
     signingTime <- Clock.getCurrentTime
 
-    runResourceT . runAWST regionalEnv $ do
-        val <- Presign.presignURL
-                (regionalEnv ^. Env.envAuth)
-                (regionalEnv ^. Env.envRegion)
+    runResourceT $ do
+        val <-  presignURL
+                regionalEnv
                 signingTime
                 tokenExpiration
                 action
@@ -101,7 +100,7 @@ newtype GetDBAuthTokenResponse = GetDBAuthTokenResponse ByteString
 newtype GetDBAuthToken = GetDBAuthToken PresignParams
 
 instance AWSRequest GetDBAuthToken where
-    type Rs GetDBAuthToken = GetDBAuthTokenResponse
+    type AWSResponse GetDBAuthToken = GetDBAuthTokenResponse
     
     request (GetDBAuthToken params)  =
         AWSReq.defaultRequest svc (GetDBAuthToken params) where

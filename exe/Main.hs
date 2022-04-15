@@ -1,19 +1,20 @@
 module Main where
 
 import           Control.Lens               ( (&)
-                                            , (.~)
+                                            , set
                                             )
 import           Data.Text
 import           Data.ByteString            ( hPut )
-import qualified Network.AWS.Auth           as AWSAuth
-import qualified Network.AWS.Env            as AWSEnv
+import           Data.Generics.Product      ( field )
+import qualified Amazonka.Auth              as AWSAuth
+import qualified Amazonka.Env               as AWSEnv
 import           System.Exit                ( die )
 import           System.IO                  ( stdout )
 
-import           Network.AWS                ( LogLevel (Info)
+import           Amazonka                   ( LogLevel (Info)
                                             , newLogger
                                             )
-import qualified Network.AWS.RDS.Utils      as RDSU
+import qualified Amazonka.RDS.Utils         as RDSU
 
 import          Options.Applicative
 
@@ -37,12 +38,8 @@ main = run =<< execParser opts
 run :: AWSOptions -> IO () 
 run parsedOpts = do
     let credsMethod =   if      (useDiscover parsedOpts)
-                        then    AWSAuth.Discover
-                        else    AWSAuth.FromEnv
-                                    AWSAuth.envAccessKey
-                                    AWSAuth.envSecretKey
-                                    (Just AWSAuth.envSessionToken)
-                                    (Just awsRegionEnvName)
+                        then    AWSAuth.discover
+                        else    AWSAuth.fromKeysEnv
 
     lgr     <- newLogger Info stdout
     env     <- AWSEnv.newEnv credsMethod
@@ -51,7 +48,7 @@ run parsedOpts = do
         Left err  -> die $ "Error: " <> err
         Right reg -> do
             token <- RDSU.generateDbAuthToken
-                        (env & AWSEnv.envLogger .~ lgr)
+                        (env & set (field @"envLogger") lgr)
                         (hostname   parsedOpts)
                         (port       parsedOpts)
                         (username   parsedOpts)
