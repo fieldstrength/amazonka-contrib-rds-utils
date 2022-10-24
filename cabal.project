@@ -11,7 +11,12 @@ source-repository-package
   type: git
   location: https://github.com/brendanhay/amazonka.git
   tag: 159719df7e509e964dba87071e2c53932a4af1a9
-  subdir: lib/amazonka lib/amazonka-core lib/services/amazonka-rds lib/services/amazonka-sts lib/services/amazonka-sso
+  subdir:
+    lib/amazonka
+    lib/amazonka-core
+    lib/services/amazonka-rds
+    lib/services/amazonka-sts
+    lib/services/amazonka-sso
   --sha256: sha256-MxnbfWlxx7fGSvx25lxgaNg6Hu1OBPerw65/jSygVY4=
 
 

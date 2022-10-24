@@ -34,8 +34,8 @@ library
     -- other-extensions:
     build-depends:      base          >= 4.14.1.0
                     ,   amazonka      >= 2.0
-                    ,   amazonka-core
-                    ,   amazonka-rds
+                    ,   amazonka-core >= 2.0
+                    ,   amazonka-rds  >= 2.0
                     ,   bytestring    >= 0.9
                     ,   generic-lens
                     ,   lens          >= 4.4
