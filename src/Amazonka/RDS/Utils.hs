@@ -101,14 +101,16 @@ newtype GetDBAuthToken = GetDBAuthToken PresignParams
 
 instance AWSRequest GetDBAuthToken where
     type AWSResponse GetDBAuthToken = GetDBAuthTokenResponse
-    
-    request (GetDBAuthToken params)  =
+
+    service _proxy = thisService
+
+    request serv (GetDBAuthToken params) =
         AWSReq.defaultRequest svc (GetDBAuthToken params) where
-            svc      = setEndpoint useHTTPS (pack . endpoint $ params) (port params) thisService
-            useHTTPS = True 
+            svc = setEndpoint useHTTPS (pack . endpoint $ params) (port params) serv
+            useHTTPS = True
 
     response = AWSResp.receiveBytes $ \_s _h x -> pure $ GetDBAuthTokenResponse x
-        
+
 
 instance ToPath GetDBAuthToken where
     toPath _ = ""
